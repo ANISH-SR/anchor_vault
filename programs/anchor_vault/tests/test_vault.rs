@@ -7,7 +7,10 @@ mod tests {
     use anchor_lang::prelude::*; 
     use anchor_lang::InstructionData;
     use anchor_vault::instruction;
+    use anchor_vault::VaultState;
     use mollusk_svm::{program, Mollusk, result::Check};
+    use solana_program::message;
+    use solana_sdk::account::WritableAccount;
     use solana_sdk::{
         account::Account, 
         instruction::{AccountMeta, Instruction},
@@ -102,14 +105,57 @@ mod tests {
 
     #[test]
     fn test_withdraw() {
-        // Example mollusk test - uncomment imports when you need them
-        // use mollusk_svm::{result::Check, Mollusk};
-        // use anchor_lang::{InstructionData, ToAccountMetas};
-        // use solana_program::instruction::Instruction;
-        
-        // let program_id = anchor_vault::id();
-        // println!("Program ID: {}", program_id);
-        
-        // Add your mollusk test logic here
+        let mollusk = Mollusk::new(&ID, "../../target/deploy/anchor_vault");
+
+        let (state_pda, state_bump) = 
+            pubkey::Pubkey::find_program_address(&[b"state", USER.as_ref()], &ID);
+
+        let (vault_pda, vault_bump) = 
+            pubkey::Pubkey::find_program_address(&[b"vault", state_pda.as_ref()], &ID);
+
+        let (system_program, system_account) = program::keyed_account_for_system_program();
+
+        // User account with some initial balance
+        let user_account = Account::new(1 * LAMPORTS_PER_SOL, 0, &system_program); // 0.5 SOL
+        let mut state_account = Account::new(mollusk.sysvars.rent.minimum_balance(8 + VaultState::INIT_SPACE), 8 + VaultState::INIT_SPACE, &ID);
+        let vault_account = Account::new(500_000_000, 0, &system_program);
+
+        //inject data 
+        let initial_state = VaultState {
+            vault_bump,
+            state_bump
+        };
+
+        let mut state_data = state_account.data_as_mut_slice();
+        anchor_lang::AccountSerialize::try_serialize(&initial_state, &mut state_data);
+
+        //get accs meta
+        let withdraw_ix_accs = vec![
+            AccountMeta::new(USER, true),
+            AccountMeta::new(state_pda, true),
+            AccountMeta::new(vault_pda, false),
+            AccountMeta::new_readonly(system_program, false),
+        ];
+
+        //Data
+        let withdraw_amount = 500_000_000;
+        let data = (anchor_vault::instruction::Withdraw {
+            amount: withdraw_amount
+        }).data();
+
+        //build Ix
+        let instructions = Instruction::new_with_bytes(ID, &data, withdraw_ix_accs);
+
+        //Get Tx Accounts
+        let tx_accs = vec![
+            (USER, user_account.clone()),
+            (state_pda, state_account.clone()),
+            (vault_pda, vault_account.clone()),
+            (system_program, system_account.clone()),
+        ];
+
+        //process and validate our instruction
+        let test_deposit = 
+            mollusk.process_and_validate_instruction(&instructions, &tx_accs, &[Check::success()]);    
     }
 }

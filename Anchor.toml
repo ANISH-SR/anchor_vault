@@ -8,6 +8,9 @@ skip-lint = false
 [programs.localnet]
 anchor_vault = "FGxVc2HAfo2bDARNMtDRzKwCbRCT8XpvBiYUYqPjLhqt"
 
+[programs.devnet]
+anchor_vault = "FGxVc2HAfo2bDARNMtDRzKwCbRCT8XpvBiYUYqPjLhqt"
+
 [registry]
 url = "https://api.apr.dev"
 
