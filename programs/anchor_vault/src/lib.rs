@@ -2,11 +2,10 @@
 #![allow(deprecated)]
 #![allow(unused)]
 use anchor_lang::{prelude::*, system_program::{Transfer, transfer}};
-
 // use crate::instruction::Deposit;
 
 declare_id!("FGxVc2HAfo2bDARNMtDRzKwCbRCT8XpvBiYUYqPjLhqt");
-// declare_id!("22222222222222222222222222222222222222222222");
+// declare_id!("22222222222222222222222222222222222222222222");   //blueshift only
 
 #[program]
 pub mod anchor_vault {
@@ -55,7 +54,6 @@ pub struct Initialize<'info> {
         bump
     )]
     pub vault: SystemAccount<'info>,
-
     pub system_program: Program<'info, System>,
 }
 
