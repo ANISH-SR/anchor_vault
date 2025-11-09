@@ -283,10 +283,6 @@ The program ID is: `FGxVc2HAfo2bDARNMtDRzKwCbRCT8XpvBiYUYqPjLhqt`
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is licensed under the ISC License - see the LICENSE file for details.
-
 ## Acknowledgments
 
 - **Anchor Framework** for the excellent Solana development framework
